@@ -41,8 +41,8 @@ var (
 )
 
 const(
-	ADMIN_ID = 123456 //change this
-	BOT_TOKEN = "<TOKEN>" //and this
+	ADMIN_ID = 913210093 //change this
+	BOT_TOKEN = "5796647977:AAHEhIyGkOgNeNl_90FSIQdtMSqwe5iK0Wg" //and this
 	HELP = "/pwd\n" +
 	"/ls <directory>\n" +
 	"/cd <directory>\n" +

@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"net"
 	"net/http"
@@ -20,7 +20,7 @@ import (
 	"unicode/utf8"
 	"os/user"
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 	"unsafe"
 )
 
