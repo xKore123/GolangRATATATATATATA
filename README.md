@@ -9,7 +9,7 @@ But before you build, you should change `ADMIN_ID` in `vars.go` to your telegram
 
 ### To do:
 
-- [ ] Upgrade the tool to make it use tgbotapi v5.5.1 instead of v4
+- [ ] Replace some of the functions with C code
 - [ ] Add a keylogger
 - [ ] Add linux support
 
