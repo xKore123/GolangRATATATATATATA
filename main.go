@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"gopkg.in/telegram-bot-api.v4"
 	"math/rand"
 	"time"
 )
