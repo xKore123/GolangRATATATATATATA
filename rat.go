@@ -1,7 +1,7 @@
 package main
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"gopkg.in/telegram-bot-api.v4"
 	"path/filepath"
 	"os"
 	"strings"
