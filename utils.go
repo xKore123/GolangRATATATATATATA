@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"net"
 	"net/http"
