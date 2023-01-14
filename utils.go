@@ -20,7 +20,7 @@ import (
 	"unicode/utf8"
 	"os/user"
 	"database/sql"
-	//"github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 	"unsafe"
 )
 
