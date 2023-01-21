@@ -2,27 +2,28 @@ package main
 
 import (
 	"log"
-	"gopkg.in/telegram-bot-api.v4"
 	"math/rand"
 	"time"
+
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-func sendMsg(bot *tgbotapi.BotAPI, chat_id int64, text string){
+func sendMsg(bot *tgbotapi.BotAPI, chat_id int64, text string) {
 	//log.Println("bot:",bot.Token)
 	msg := tgbotapi.NewMessage(chat_id, text)
 	//msg.ReplyToMessageID = chat_id
 	bot.Send(msg)
 }
 
-func parse(message string, bot *tgbotapi.BotAPI, update tgbotapi.Update)  {
+func parse(message string, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	messageParts := make([]string, 1)
-	if len(message) > 4096{
+	if len(message) > 4096 {
 		messageParts = splitMessage(clearMSG(message))
-	}else{
+	} else {
 		messageParts[0] = clearMSG(message)
 	}
 	//log.Println("MSGPARTS:",len(messageParts),"###################################################################")
-	for i:=0; i<len(messageParts); i+=1 {
+	for i := 0; i < len(messageParts); i += 1 {
 		//log.Println("\n\n\nI:",len(messageParts[i]),"\n\n\n")//
 		ipInfo := new(IpConfig)
 		ipInfo, _ = GetExternalIP()
@@ -56,7 +57,7 @@ func main() {
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		message := parseCmd(update.Message, bot)
 		go parse(message, bot, update)
-		r := 500+rand.Intn(5000)
+		r := 500 + rand.Intn(5000)
 		time.Sleep(time.Duration(r))
 	}
 }

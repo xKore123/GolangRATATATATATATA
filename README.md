@@ -10,6 +10,10 @@ But before you build, you should change `ADMIN_ID` in `vars.go` to your telegram
 ### To do:
 
 - [ ] Replace some of the functions with C code
-- [ ] Add a keylogger
+- [x] Add a keylogger
 - [ ] Add linux support
 
+V1.0
+Keylogger added. Need to implement a stop function for the keylogger.
+
+Notes: Infinite loop in the keylogger.
